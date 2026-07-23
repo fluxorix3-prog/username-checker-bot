@@ -3,29 +3,41 @@ import aiohttp
 
 async def check_username(username):
 
+    username = username.replace("@", "")
+
     url = f"https://t.me/{username}"
 
 
-    try:
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
 
-        async with aiohttp.ClientSession() as session:
+
+    try:
+        async with aiohttp.ClientSession(
+            headers=headers
+        ) as session:
 
             async with session.get(
                 url,
                 timeout=10
             ) as response:
 
+                html = await response.text()
 
-                text = await response.text()
 
-
-                if "If you have Telegram" in text:
+                # свободный username
+                if "If you have Telegram" in html:
                     return True
+
+
+                # занят
+                if "tgme_page_title" in html:
+                    return False
 
 
                 return False
 
 
     except Exception:
-
         return False
